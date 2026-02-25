@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>✨ Glow Up – Rate Anything</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            display: ['"Playfair Display"', 'serif'],
+            body: ['"Plus Jakarta Sans"', 'sans-serif'],
+          },
+          colors: {
+            blush: '#FFB3C6',
+            lilac: '#C8B5FF',
+            mint: '#B5EFDF',
+            peach: '#FFCBA4',
+            sky: '#A8D8EA',
+            cream: '#FFF8F0',
+            rose: '#FF6B9D',
+            violet: '#9B59B6',
+          },
+          animation: {
+            'float': 'float 3s ease-in-out infinite',
+            'pop-in': 'popIn 0.4s cubic-bezier(0.34,1.56,0.64,1) forwards',
+            'slide-up': 'slideUp 0.35s ease forwards',
+            'shimmer': 'shimmer 1.5s infinite',
+            'sparkle': 'sparkle 1.5s ease-in-out infinite',
+            'heart-beat': 'heartBeat 0.4s ease',
+          },
+          keyframes: {
+            float: { '0%,100%': {transform:'translateY(0)'}, '50%': {transform:'translateY(-8px)'} },
+            popIn: { from:{opacity:0,transform:'scale(0.8)'}, to:{opacity:1,transform:'scale(1)'} },
+            slideUp: { from:{opacity:0,transform:'translateY(20px)'}, to:{opacity:1,transform:'translateY(0)'} },
+            shimmer: { '0%':{backgroundPosition:'200% 0'}, '100%':{backgroundPosition:'-200% 0'} },
+            sparkle: { '0%,100%':{opacity:1,transform:'scale(1)'}, '50%':{opacity:0.5,transform:'scale(1.3)'} },
+            heartBeat: { '0%':{transform:'scale(1)'}, '50%':{transform:'scale(1.4)'}, '100%':{transform:'scale(1)'} },
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background: #FFF0F7; min-height: 100vh; }
+
+    /* Dreamy background */
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: -1;
+      background:
+        radial-gradient(ellipse 80% 60% at 10% 0%, rgba(200,181,255,0.35) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 50% at 90% 10%, rgba(255,179,198,0.35) 0%, transparent 60%),
+        radial-gradient(ellipse 70% 60% at 50% 100%, rgba(168,216,234,0.25) 0%, transparent 60%),
+        #FFF0F7;
+    }
+
+    /* Floating sparkle orbs */
+    .orb {
+      position: fixed; border-radius: 50%; pointer-events: none; z-index: 0;
+      filter: blur(60px); opacity: 0.4;
+      animation: float 4s ease-in-out infinite;
+    }
+
+    /* Glassmorphism */
+    .glass {
+      background: rgba(255,255,255,0.55);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.7);
+    }
+    .glass-dark {
+      background: rgba(255,255,255,0.35);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255,255,255,0.5);
+    }
+
+    /* Score stars */
+    .stars-input { display: flex; flex-direction: row-reverse; gap: 4px; justify-content: center; }
+    .stars-input input { display: none; }
+    .stars-input label {
+      font-size: 2rem; cursor: pointer; color: #e0d0e8;
+      transition: transform 0.15s, color 0.1s; display: block;
+      filter: grayscale(1);
+    }
+    .stars-input label:hover,
+    .stars-input label:hover ~ label,
+    .stars-input input:checked ~ label {
+      color: #FFB800; filter: grayscale(0); transform: scale(1.2);
+    }
+
+    /* Card */
+    .post-card {
+      background: rgba(255,255,255,0.7);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.8);
+      border-radius: 24px;
+      overflow: hidden;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      position: relative;
+    }
+    .post-card:hover {
+      transform: translateY(-6px) rotate(0.3deg);
+      box-shadow: 0 24px 60px rgba(200,181,255,0.35), 0 8px 20px rgba(255,107,157,0.15);
+    }
+
+    /* Category pill */
+    .cat-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 12px; border-radius: 20px; font-size: 0.72rem;
+      font-weight: 600; letter-spacing: 0.5px;
+    }
+
+    /* Upload zone */
+    .upload-zone {
+      border: 2px dashed rgba(200,181,255,0.5);
+      background: rgba(255,255,255,0.4);
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .upload-zone:hover, .upload-zone.drag-over {
+      border-color: #C8B5FF;
+      background: rgba(200,181,255,0.12);
+    }
+
+    /* Input styles */
+    .cute-input {
+      background: rgba(255,255,255,0.6);
+      border: 1.5px solid rgba(200,181,255,0.4);
+      border-radius: 14px;
+      padding: 12px 16px;
+      width: 100%;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 0.9rem;
+      color: #3a2a4a;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .cute-input:focus {
+      border-color: #C8B5FF;
+      box-shadow: 0 0 0 4px rgba(200,181,255,0.2);
+    }
+    .cute-input::placeholder { color: rgba(100,80,130,0.4); }
+
+    /* Button */
+    .btn-primary {
+      background: linear-gradient(135deg, #FF6B9D, #C8B5FF);
+      color: white;
+      border: none;
+      border-radius: 16px;
+      padding: 14px 28px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 8px 24px rgba(255,107,157,0.3);
+      width: 100%;
+      letter-spacing: 0.3px;
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(255,107,157,0.4); }
+    .btn-primary:active { transform: translateY(0); }
+
+    /* Score badge */
+    .score-badge {
+      background: linear-gradient(135deg, #FF6B9D, #C8B5FF);
+      color: white;
+      font-weight: 800;
+      font-size: 1.1rem;
+      border-radius: 50%;
+      width: 48px; height: 48px;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 14px rgba(255,107,157,0.35);
+      flex-shrink: 0;
+    }
+
+    /* Rating row */
+    .score-btn {
+      width: 44px; height: 44px;
+      border-radius: 12px;
+      border: 2px solid rgba(200,181,255,0.3);
+      background: rgba(255,255,255,0.5);
+      color: #9B59B6;
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .score-btn:hover, .score-btn.active {
+      background: linear-gradient(135deg, #FF6B9D, #C8B5FF);
+      color: white;
+      border-color: transparent;
+      transform: scale(1.1);
+      box-shadow: 0 4px 12px rgba(255,107,157,0.3);
+    }
+
+    /* Nav */
+    .nav-pill {
+      padding: 10px 20px; border-radius: 20px; font-weight: 600; font-size: 0.85rem;
+      cursor: pointer; transition: all 0.2s; border: none; background: transparent;
+      color: rgba(100,70,130,0.6);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .nav-pill.active {
+      background: linear-gradient(135deg, #FF6B9D, #C8B5FF);
+      color: white;
+      box-shadow: 0 4px 14px rgba(255,107,157,0.3);
+    }
+
+    /* Filter pill */
+    .filter-pill {
+      padding: 8px 16px; border-radius: 20px; font-size: 0.8rem; font-weight: 600;
+      cursor: pointer; transition: all 0.2s; border: 2px solid rgba(200,181,255,0.3);
+      background: rgba(255,255,255,0.5); color: #9B59B6; white-space: nowrap;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .filter-pill.active {
+      background: linear-gradient(135deg, #FF6B9D, #C8B5FF);
+      color: white; border-color: transparent;
+    }
+
+    /* Shimmer */
+    .shimmer-card {
+      background: linear-gradient(90deg, rgba(255,255,255,0.4) 25%, rgba(255,255,255,0.7) 50%, rgba(255,255,255,0.4) 75%);
+      background-size: 400% 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: 24px;
+    }
+
+    /* Delete btn */
+    .delete-btn {
+      position: absolute; top: 10px; right: 10px; z-index: 10;
+      background: rgba(255,255,255,0.9);
+      border: none; border-radius: 50%;
+      width: 32px; height: 32px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+      font-size: 0.85rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .post-card:hover .delete-btn { opacity: 1; }
+    .delete-btn:hover { background: #FFB3C6; }
+
+    /* Modal backdrop */
+    .modal-backdrop {
+      background: rgba(100,50,120,0.2);
+      backdrop-filter: blur(8px);
+    }
+
+    /* Confetti */
+    .confetti-piece {
+      position: fixed; pointer-events: none; z-index: 9999;
+      width: 8px; height: 8px; border-radius: 2px;
+      animation: confettiFall linear forwards;
+    }
+    @keyframes confettiFall {
+      0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+    }
+
+    /* Emoji reaction */
+    .reaction-btn {
+      background: rgba(255,255,255,0.6);
+      border: 1.5px solid rgba(200,181,255,0.3);
+      border-radius: 20px;
+      padding: 4px 10px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex; align-items: center; gap: 4px;
+      color: #9B59B6; font-weight: 600;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .reaction-btn:hover, .reaction-btn.reacted {
+      background: rgba(200,181,255,0.25);
+      border-color: #C8B5FF;
+      transform: scale(1.05);
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: rgba(255,255,255,0.3); }
+    ::-webkit-scrollbar-thumb { background: #C8B5FF; border-radius: 3px; }
+
+    /* Category colors */
+    .cat-fit    { background: rgba(255,179,198,0.2); color: #d44b7a; border: 1px solid rgba(255,179,198,0.5); }
+    .cat-makeup { background: rgba(200,181,255,0.2); color: #7c4fa0; border: 1px solid rgba(200,181,255,0.5); }
+    .cat-food   { background: rgba(255,203,164,0.3); color: #c0663a; border: 1px solid rgba(255,203,164,0.6); }
+    .cat-style  { background: rgba(181,239,223,0.3); color: #2a8a6e; border: 1px solid rgba(181,239,223,0.6); }
+    .cat-nails  { background: rgba(168,216,234,0.3); color: #2a6fa0; border: 1px solid rgba(168,216,234,0.6); }
+    .cat-other  { background: rgba(200,200,200,0.2); color: #666; border: 1px solid rgba(200,200,200,0.5); }
+  </style>
+</head>
+<body>
+
+  <!-- Floating orbs -->
+  <div class="orb w-96 h-96 bg-lilac" style="top:-10%;left:-5%;animation-delay:0s"></div>
+  <div class="orb w-72 h-72 bg-blush" style="top:10%;right:-5%;animation-delay:1s"></div>
+  <div class="orb w-80 h-80 bg-mint" style="bottom:-5%;left:30%;animation-delay:2s"></div>
+
+  <!-- ═══════════════ HEADER ═══════════════ -->
+  <header class="glass sticky top-0 z-50 border-b border-white/60">
+    <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-2.5">
+        <span class="text-3xl animate-sparkle">✨</span>
+        <div>
+          <h1 class="font-display text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-rose to-violet leading-none">Glow Up</h1>
+          <p class="text-[10px] text-violet/50 font-medium tracking-widest uppercase">Rate Everything Beautiful</p>
+        </div>
+      </div>
+      <div class="flex gap-1.5">
+        <button onclick="showView('feed')" id="nav-feed" class="nav-pill active">✨ Feed</button>
+        <button onclick="showView('post')" id="nav-post" class="nav-pill">+ Post</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ═══════════════ TICKER ═══════════════ -->
+  <div class="overflow-hidden py-2" style="background:linear-gradient(90deg,#FF6B9D,#C8B5FF,#FF6B9D);background-size:200%;animation:shimmer 3s linear infinite">
+    <div id="ticker" class="flex whitespace-nowrap text-white text-xs font-semibold tracking-widest" style="animation:marquee 20s linear infinite;width:max-content">
+      <span class="mx-6">💋 RATE THAT LOOK</span><span class="mx-6">👗 FIT CHECK</span><span class="mx-6">🍰 FOODIE VIBES</span><span class="mx-6">💅 NAIL ART</span><span class="mx-6">✨ GLOWING UP</span>
+      <span class="mx-6">💋 RATE THAT LOOK</span><span class="mx-6">👗 FIT CHECK</span><span class="mx-6">🍰 FOODIE VIBES</span><span class="mx-6">💅 NAIL ART</span><span class="mx-6">✨ GLOWING UP</span>
+    </div>
+  </div>
+  <style>@keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}</style>
+
+  <main class="max-w-5xl mx-auto px-4 py-8 relative z-10">
+
+    <!-- ═══════════════ FEED VIEW ═══════════════ -->
+    <div id="view-feed">
+
+      <!-- Hero text -->
+      <div class="text-center mb-8 animate-slide-up">
+        <h2 class="font-display text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-br from-rose via-violet to-sky leading-tight">
+          What's glowing today?
+        </h2>
+        <p class="text-violet/50 mt-2 text-sm font-medium">Rate fits, makeup looks, food, nails & more ✨</p>
+      </div>
+
+      <!-- Filter bar -->
+      <div class="flex gap-2.5 overflow-x-auto pb-2 mb-6 scrollbar-hide" style="scrollbar-width:none">
+        <button class="filter-pill active" data-cat="all" onclick="filterFeed('all',this)">🌸 All</button>
+        <button class="filter-pill" data-cat="fit" onclick="filterFeed('fit',this)">👗 Fit</button>
+        <button class="filter-pill" data-cat="makeup" onclick="filterFeed('makeup',this)">💋 Makeup</button>
+        <button class="filter-pill" data-cat="food" onclick="filterFeed('food',this)">🍰 Food</button>
+        <button class="filter-pill" data-cat="nails" onclick="filterFeed('nails',this)">💅 Nails</button>
+        <button class="filter-pill" data-cat="style" onclick="filterFeed('style',this)">🎀 Style</button>
+        <button class="filter-pill" data-cat="other" onclick="filterFeed('other',this)">💫 Other</button>
+      </div>
+
+      <!-- Sort + count -->
+      <div class="flex items-center justify-between mb-4">
+        <p class="text-violet/50 text-sm font-medium" id="feed-count">Loading...</p>
+        <select id="sort-select" onchange="renderFeed()"
+          class="cute-input text-xs py-2 px-3" style="width:auto;padding:8px 14px">
+          <option value="newest">✨ Newest</option>
+          <option value="top">⭐ Top Rated</option>
+          <option value="most">🔥 Most Rated</option>
+        </select>
+      </div>
+
+      <!-- Grid -->
+      <div id="feed-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+        <div class="shimmer-card aspect-[3/4]"></div>
+        <div class="shimmer-card aspect-[3/4]"></div>
+        <div class="shimmer-card aspect-[3/4]"></div>
+        <div class="shimmer-card aspect-[3/4]"></div>
+      </div>
+
+      <!-- Empty state -->
+      <div id="feed-empty" class="hidden text-center py-20 animate-pop-in">
+        <p class="text-6xl mb-4 animate-float inline-block">🌸</p>
+        <p class="font-display text-2xl text-violet/40 font-bold">Nothing here yet!</p>
+        <p class="text-violet/30 text-sm mt-1">Be the first to post your look ✨</p>
+        <button onclick="showView('post')" class="btn-primary mt-6" style="width:auto;padding:12px 32px">
+          Post First Look ✨
+        </button>
+      </div>
+    </div>
+
+    <!-- ═══════════════ POST VIEW ═══════════════ -->
+    <div id="view-post" class="hidden">
+      <div class="max-w-md mx-auto animate-slide-up">
+        <div class="text-center mb-6">
+          <h2 class="font-display text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-rose to-violet">
+            Share Your Look ✨
+          </h2>
+          <p class="text-violet/40 text-sm mt-1">Post anything — fit, food, makeup, nails...</p>
+        </div>
+
+        <div class="glass rounded-3xl p-6 shadow-xl shadow-violet/10">
+          <form id="post-form" onsubmit="submitPost(event)" class="space-y-4">
+
+            <!-- Category selector -->
+            <div>
+              <label class="block text-xs font-bold text-violet/50 uppercase tracking-widest mb-2">Category</label>
+              <div class="flex flex-wrap gap-2">
+                <label class="category-radio">
+                  <input type="radio" name="category" value="fit" class="hidden" />
+                  <span class="filter-pill cursor-pointer">👗 Fit</span>
+                </label>
+                <label class="category-radio">
+                  <input type="radio" name="category" value="makeup" class="hidden" />
+                  <span class="filter-pill cursor-pointer">💋 Makeup</span>
+                </label>
+                <label class="category-radio">
+                  <input type="radio" name="category" value="food" class="hidden" />
+                  <span class="filter-pill cursor-pointer">🍰 Food</span>
+                </label>
+                <label class="category-radio">
+                  <input type="radio" name="category" value="nails" class="hidden" />
+                  <span class="filter-pill cursor-pointer">💅 Nails</span>
+                </label>
+                <label class="category-radio">
+                  <input type="radio" name="category" value="style" class="hidden" />
+                  <span class="filter-pill cursor-pointer">🎀 Style</span>
+                </label>
+                <label class="category-radio">
+                  <input type="radio" name="category" value="other" class="hidden" checked />
+                  <span class="filter-pill active cursor-pointer">💫 Other</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Image upload -->
+            <div>
+              <label class="block text-xs font-bold text-violet/50 uppercase tracking-widest mb-2">Photo</label>
+              <div id="upload-zone" class="upload-zone p-6 text-center relative"
+                onclick="document.getElementById('file-input').click()"
+                ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
+                <input type="file" id="file-input" accept="image/*" class="hidden" onchange="previewImage(event)" required />
+                <div id="upload-placeholder">
+                  <p class="text-4xl mb-2 animate-float inline-block">📸</p>
+                  <p class="text-violet/50 font-semibold text-sm">Drop your photo here</p>
+                  <p class="text-violet/30 text-xs mt-1">or tap to browse</p>
+                </div>
+                <div id="image-preview-wrap" class="hidden relative">
+                  <img id="image-preview" class="w-full rounded-xl object-cover max-h-64" />
+                  <button type="button" onclick="removeImage(event)"
+                    class="absolute top-2 right-2 bg-white/90 rounded-full w-7 h-7 flex items-center justify-center text-sm shadow hover:bg-blush transition-colors">✕</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Username -->
+            <div>
+              <label class="block text-xs font-bold text-violet/50 uppercase tracking-widest mb-2">Your Name / Handle</label>
+              <input type="text" id="username" required placeholder="e.g. @glowqueen" maxlength="32" class="cute-input" />
+            </div>
+
+            <!-- Caption -->
+            <div>
+              <label class="block text-xs font-bold text-violet/50 uppercase tracking-widest mb-2">Caption</label>
+              <textarea id="caption" rows="2" maxlength="140" placeholder="Describe your look..." class="cute-input resize-none"></textarea>
+            </div>
+
+            <!-- Delete PIN -->
+            <div>
+              <label class="block text-xs font-bold text-violet/50 uppercase tracking-widest mb-2">Delete PIN (optional)</label>
+              <input type="password" id="delete-pin" placeholder="Set a PIN to delete later" maxlength="16" class="cute-input" />
+              <p class="text-violet/30 text-xs mt-1.5">Remember this to delete your post</p>
+            </div>
+
+            <button type="submit" id="submit-btn" class="btn-primary">
+              <span id="submit-text">Post My Look ✨</span>
+            </button>
+          </form>
+
+          <!-- Share card -->
+          <div id="share-card" class="hidden text-center animate-pop-in">
+            <div class="text-5xl mb-3 animate-float inline-block">🎉</div>
+            <h3 class="font-display text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-rose to-violet">
+              You're glowing!
+            </h3>
+            <p class="text-violet/40 text-sm mt-1 mb-4">Share with friends to get rated ✨</p>
+            <div class="flex gap-2 mb-4">
+              <input id="share-link" readonly class="cute-input text-xs py-2" />
+              <button onclick="copyShareLink()" class="btn-primary text-sm" style="width:auto;padding:10px 18px;white-space:nowrap">
+                Copy 📋
+              </button>
+            </div>
+            <button onclick="showView('feed')" class="text-violet/40 text-sm hover:text-violet transition-colors">
+              ← Back to feed
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ RATE VIEW ═══════════════ -->
+    <div id="view-rate" class="hidden max-w-md mx-auto">
+      <div id="rate-content"></div>
+    </div>
+
+  </main>
+
+  <!-- ═══════════════ MODAL ═══════════════ -->
+  <div id="modal" class="hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 modal-backdrop" onclick="closeModal(event)">
+    <div class="glass rounded-3xl w-full max-w-lg overflow-hidden animate-pop-in shadow-2xl shadow-violet/20 max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+      <div id="modal-content"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ DELETE CONFIRM MODAL ═══════════════ -->
+  <div id="delete-modal" class="hidden fixed inset-0 z-[60] flex items-center justify-center p-4 modal-backdrop">
+    <div class="glass rounded-3xl w-full max-w-sm p-6 animate-pop-in shadow-2xl">
+      <div class="text-center mb-4">
+        <p class="text-4xl mb-2">🗑️</p>
+        <h3 class="font-display text-xl font-bold text-violet">Delete this post?</h3>
+        <p class="text-violet/40 text-sm mt-1">This can't be undone.</p>
+      </div>
+      <input type="password" id="confirm-pin" placeholder="Enter your PIN (or leave blank if none set)"
+        class="cute-input mb-4" />
+      <div class="flex gap-3">
+        <button onclick="closeDeleteModal()" class="flex-1 py-3 rounded-2xl border-2 border-violet/20 text-violet/60 font-semibold hover:bg-violet/5 transition-colors">Cancel</button>
+        <button onclick="confirmDelete()" class="flex-1 py-3 rounded-2xl font-bold text-white transition-all hover:opacity-90"
+          style="background:linear-gradient(135deg,#FF6B9D,#C8B5FF)">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ TOAST ═══════════════ -->
+  <div id="toast" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-[999] glass rounded-full px-5 py-3 shadow-xl shadow-violet/20 flex items-center gap-2 animate-slide-up text-sm font-semibold text-violet whitespace-nowrap">
+    <span id="toast-icon"></span><span id="toast-msg"></span>
+  </div>
+
+  <script>
+    // ── Config ──────────────────────────────────────────
+    const API = 'http://localhost:8000';
+    const STORAGE_KEY = 'glowup_posts';
+    let allPosts = [];
+    let currentFilter = 'all';
+    let currentModalToken = null;
+    let pendingDeleteToken = null;
+    let selectedScore = 0;
+
+    const CATEGORIES = {
+      fit:    { emoji:'👗', label:'Fit',    cls:'cat-fit'    },
+      makeup: { emoji:'💋', label:'Makeup', cls:'cat-makeup' },
+      food:   { emoji:'🍰', label:'Food',   cls:'cat-food'   },
+      nails:  { emoji:'💅', label:'Nails',  cls:'cat-nails'  },
+      style:  { emoji:'🎀', label:'Style',  cls:'cat-style'  },
+      other:  { emoji:'💫', label:'Other',  cls:'cat-other'  },
+    };
+
+    const REACTIONS = ['❤️','🔥','✨','💅','😍'];
+
+    // ── Local storage helpers (demo/offline mode) ───────
+    function getLocal() {
+      try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch { return []; }
+    }
+    function saveLocal(posts) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(posts));
+    }
+    function getLocalReactions(postId) {
+      try { return JSON.parse(localStorage.getItem('reactions_'+postId) || '{}'); } catch { return {}; }
+    }
+    function saveLocalReactions(postId, data) {
+      localStorage.setItem('reactions_'+postId, JSON.stringify(data));
+    }
+    function getLocalRatings(postId) {
+      try { return JSON.parse(localStorage.getItem('ratings_'+postId) || '[]'); } catch { return []; }
+    }
+    function saveLocalRating(postId, rater, score) {
+      const r = getLocalRatings(postId);
+      r.push({ rater, score, at: new Date().toISOString() });
+      localStorage.setItem('ratings_'+postId, JSON.stringify(r));
+      return r;
+    }
+    function calcAvg(ratings) {
+      if (!ratings.length) return null;
+      return parseFloat((ratings.reduce((s,r)=>s+r.score,0)/ratings.length).toFixed(1));
+    }
+
+    // ── Toast ──────────────────────────────────────────
+    function toast(msg, icon='✨', ms=2800) {
+      const el = document.getElementById('toast');
+      document.getElementById('toast-msg').textContent = msg;
+      document.getElementById('toast-icon').textContent = icon;
+      el.classList.remove('hidden');
+      clearTimeout(el._t);
+      el._t = setTimeout(() => el.classList.add('hidden'), ms);
+    }
+
+    // ── Confetti 🎊 ────────────────────────────────────
+    function confetti() {
+      const colors = ['#FF6B9D','#C8B5FF','#FFB800','#B5EFDF','#A8D8EA'];
+      for (let i = 0; i < 30; i++) {
+        const p = document.createElement('div');
+        p.className = 'confetti-piece';
+        p.style.cssText = `left:${Math.random()*100}vw;background:${colors[Math.random()*colors.length|0]};
+          animation-duration:${0.8+Math.random()*1}s;animation-delay:${Math.random()*0.4}s;
+          border-radius:${Math.random()>0.5?'50%':'2px'};`;
+        document.body.appendChild(p);
+        setTimeout(() => p.remove(), 2000);
+      }
+    }
+
+    // ── Navigation ─────────────────────────────────────
+    function showView(v) {
+      ['feed','post','rate'].forEach(n => {
+        document.getElementById('view-'+n).classList.add('hidden');
+        const b = document.getElementById('nav-'+n);
+        if (b) { b.classList.remove('active'); }
+      });
+      document.getElementById('view-'+v).classList.remove('hidden');
+      const ab = document.getElementById('nav-'+v);
+      if (ab) ab.classList.add('active');
+      if (v === 'feed') loadFeed();
+    }
+
+    // ── Category radio UX ──────────────────────────────
+    document.querySelectorAll('.category-radio').forEach(label => {
+      label.addEventListener('click', () => {
+        document.querySelectorAll('.category-radio span').forEach(s => s.classList.remove('active'));
+        label.querySelector('span').classList.add('active');
+      });
+    });
+
+    // ── Feed ───────────────────────────────────────────
+    async function loadFeed() {
+      // Try API, fallback to localStorage
+      try {
+        const res = await fetch(`${API}/fits?request_base=${API}`, {signal: AbortSignal.timeout(2000)});
+        if (res.ok) {
+          const data = await res.json();
+          allPosts = data.map(p => ({...p, source:'api'}));
+          renderFeed(); return;
+        }
+      } catch {}
+
+      allPosts = getLocal();
+      // Enrich with local ratings
+      allPosts = allPosts.map(p => {
+        const ratings = getLocalRatings(p.id);
+        return { ...p, avg_rating: calcAvg(ratings), total_ratings: ratings.length };
+      });
+      renderFeed();
+    }
+
+    function filterFeed(cat, btn) {
+      currentFilter = cat;
+      document.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderFeed();
+    }
+
+    function renderFeed() {
+      const sort = document.getElementById('sort-select').value;
+      let posts = currentFilter === 'all' ? [...allPosts] : allPosts.filter(p => p.category === currentFilter);
+      if (sort === 'top') posts.sort((a,b) => (b.avg_rating||0)-(a.avg_rating||0));
+      else if (sort === 'most') posts.sort((a,b) => b.total_ratings-a.total_ratings);
+      else posts.sort((a,b) => new Date(b.created_at)-new Date(a.created_at));
+
+      const grid = document.getElementById('feed-grid');
+      const empty = document.getElementById('feed-empty');
+      document.getElementById('feed-count').textContent = `${posts.length} look${posts.length!==1?'s':''} ✨`;
+
+      if (!posts.length) {
+        grid.classList.add('hidden'); empty.classList.remove('hidden'); return;
+      }
+      grid.classList.remove('hidden'); empty.classList.add('hidden');
+
+      grid.innerHTML = posts.map((p, i) => {
+        const cat = CATEGORIES[p.category] || CATEGORIES.other;
+        const score = p.avg_rating;
+        const scoreColor = score>=9?'#FF6B9D':score>=7?'#C8B5FF':score>=5?'#FFB800':'#aaa';
+        const label = score>=9?'✨ Iconic':score>=8?'🔥 Slay':score>=6?'💅 Cute':score?'💫 Meh':'💬 Rate me!';
+        const reactions = getLocalReactions(p.id);
+        const reactionCount = Object.values(reactions).reduce((s,v)=>s+v,0);
+
+        return `
+        <div class="post-card animate-slide-up cursor-pointer" style="animation-delay:${i*50}ms"
+          data-token="${p.share_token}" onclick="openModal('${p.share_token}')">
+
+          <button class="delete-btn" onclick="event.stopPropagation();startDelete('${p.id}','${p.share_token}')" title="Delete">🗑️</button>
+
+          <!-- Image -->
+          <div class="aspect-[3/4] overflow-hidden relative bg-gradient-to-br from-blush/30 to-lilac/30">
+            <img src="${p.image_url}" alt="${p.username}"
+              class="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+              onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22400%22><rect fill=%22%23f9e8f5%22 width=%22300%22 height=%22400%22/><text fill=%22%23c8b5ff%22 font-size=%2280%22 x=%22150%22 y=%22215%22 text-anchor=%22middle%22>${cat.emoji}</text></svg>'" />
+
+            <!-- Category badge -->
+            <div class="absolute top-2.5 left-2.5">
+              <span class="cat-pill ${cat.cls} text-[10px]">${cat.emoji} ${cat.label}</span>
+            </div>
+
+            <!-- Score badge -->
+            <div class="absolute top-2.5 right-2.5 ${reactionCount>0||score?'':'hidden'}">
+              ${score ? `
+                <div class="score-badge text-xs" style="width:38px;height:38px;font-size:0.9rem;background:linear-gradient(135deg,${scoreColor},${scoreColor}99)">
+                  ${score}
+                </div>` : ''}
+            </div>
+          </div>
+
+          <!-- Info -->
+          <div class="p-3">
+            <p class="font-bold text-sm text-violet truncate">${p.username}</p>
+            ${p.caption ? `<p class="text-violet/40 text-xs mt-0.5 truncate">${p.caption}</p>` : ''}
+            <div class="flex items-center justify-between mt-2">
+              <span class="text-[10px] font-semibold" style="color:${scoreColor}">${label}</span>
+              <span class="text-[10px] text-violet/30">${p.total_ratings} rating${p.total_ratings!==1?'s':''}</span>
+            </div>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    // ── Modal ──────────────────────────────────────────
+    function openModal(token) {
+      currentModalToken = token;
+      selectedScore = 0;
+      const post = allPosts.find(p => p.share_token === token);
+      if (!post) return;
+
+      const cat = CATEGORIES[post.category] || CATEGORIES.other;
+      const reactions = getLocalReactions(post.id);
+      document.getElementById('modal').classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+
+      document.getElementById('modal-content').innerHTML = `
+        <div class="flex flex-col sm:flex-row">
+          <!-- Image col -->
+          <div class="sm:w-5/12 aspect-[3/4] sm:aspect-auto bg-gradient-to-br from-blush/30 to-lilac/30 relative flex-shrink-0">
+            <img src="${post.image_url}" class="w-full h-full object-cover"
+              onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22400%22><rect fill=%22%23f9e8f5%22 width=%22300%22 height=%22400%22/><text fill=%22%23c8b5ff%22 font-size=%2280%22 x=%22150%22 y=%22215%22 text-anchor=%22middle%22>${cat.emoji}</text></svg>'" />
+            <div class="absolute top-3 left-3">
+              <span class="cat-pill ${cat.cls}">${cat.emoji} ${cat.label}</span>
+            </div>
+          </div>
+
+          <!-- Info col -->
+          <div class="sm:w-7/12 p-5 flex flex-col gap-4 min-h-0">
+            <!-- Header -->
+            <div class="flex items-start justify-between">
+              <div>
+                <p class="font-bold text-violet text-lg leading-tight">${post.username}</p>
+                ${post.caption ? `<p class="text-violet/40 text-sm mt-0.5">${post.caption}</p>` : ''}
+              </div>
+              <button onclick="closeModal()" class="text-violet/30 hover:text-violet text-xl leading-none ml-2 transition-colors">✕</button>
+            </div>
+
+            <!-- Score display -->
+            <div class="glass-dark rounded-2xl p-4 flex items-center gap-4">
+              <div class="score-badge text-xl" style="width:56px;height:56px">
+                ${post.avg_rating ? post.avg_rating : '–'}
+              </div>
+              <div>
+                <p class="font-display text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-rose to-violet">
+                  ${post.avg_rating ? post.avg_rating+'/10' : 'No ratings yet'}
+                </p>
+                <p class="text-violet/40 text-xs">${post.total_ratings} rating${post.total_ratings!==1?'s':''}</p>
+              </div>
+              <div class="ml-auto text-xl">${post.avg_rating>=9?'✨':post.avg_rating>=7?'🔥':post.avg_rating>=5?'💅':post.avg_rating?'💫':'💬'}</div>
+            </div>
+
+            <!-- Reactions -->
+            <div>
+              <p class="text-xs font-bold text-violet/30 uppercase tracking-widest mb-2">Reactions</p>
+              <div class="flex flex-wrap gap-2" id="reactions-row">
+                ${REACTIONS.map(e => `
+                  <button class="reaction-btn ${reactions[e]>0?'reacted':''}" onclick="addReaction('${post.id}','${e}')" id="react-${e.codePointAt(0)}">
+                    ${e} <span id="rcount-${e.codePointAt(0)}">${reactions[e]||''}</span>
+                  </button>`).join('')}
+              </div>
+            </div>
+
+            <!-- Rate it -->
+            <div class="glass-dark rounded-2xl p-4">
+              <p class="text-xs font-bold text-violet/40 uppercase tracking-widest mb-3">Give your rating</p>
+              <div class="grid grid-cols-5 gap-1.5 mb-3" id="score-buttons">
+                ${[1,2,3,4,5,6,7,8,9,10].map(n=>`
+                  <button type="button" class="score-btn" data-score="${n}" onclick="selectScore(${n})">${n}</button>
+                `).join('')}
+              </div>
+              <input type="text" id="rater-name" placeholder="Your name (optional)" class="cute-input text-sm py-2 mb-3" />
+              <button onclick="submitRating()" id="rate-btn" class="btn-primary py-3 text-sm">Drop your rating 💫</button>
+            </div>
+
+            <!-- Share -->
+            <div>
+              <p class="text-xs font-bold text-violet/30 uppercase tracking-widest mb-2">Share with friends</p>
+              <div class="flex gap-2">
+                <input readonly value="${window.location.origin}${window.location.pathname}?rate=${post.share_token}"
+                  class="cute-input text-xs py-2 flex-1" />
+                <button onclick="copyLink('${post.share_token}')"
+                  class="btn-primary text-xs py-2" style="width:auto;padding:8px 16px;white-space:nowrap">Copy 📋</button>
+              </div>
+            </div>
+
+          </div>
+        </div>`;
+    }
+
+    function closeModal(e) {
+      if (!e || e.target === document.getElementById('modal')) {
+        document.getElementById('modal').classList.add('hidden');
+        document.body.style.overflow = '';
+        selectedScore = 0;
+      }
+    }
+
+    // ── Reactions ──────────────────────────────────────
+    function addReaction(postId, emoji) {
+      const r = getLocalReactions(postId);
+      r[emoji] = (r[emoji]||0)+1;
+      saveLocalReactions(postId, r);
+      const key = emoji.codePointAt(0);
+      const btn = document.getElementById('react-'+key);
+      if (btn) { btn.classList.add('reacted'); document.getElementById('rcount-'+key).textContent = r[emoji]; }
+      // Floating emoji animation
+      const el = document.createElement('div');
+      el.textContent = emoji;
+      el.style.cssText = `position:fixed;font-size:2rem;pointer-events:none;z-index:9999;
+        left:${Math.random()*60+20}vw;bottom:20vh;animation:confettiFall 1s ease forwards`;
+      document.body.appendChild(el);
+      setTimeout(()=>el.remove(),1200);
+    }
+
+    // ── Score select ───────────────────────────────────
+    function selectScore(n) {
+      selectedScore = n;
+      document.querySelectorAll('.score-btn').forEach(btn => {
+        const s = parseInt(btn.dataset.score);
+        if (s <= n) btn.classList.add('active'); else btn.classList.remove('active');
+      });
+    }
+
+    async function submitRating() {
+      if (!selectedScore) { toast('Pick a score first!', '⚠️'); return; }
+      const btn = document.getElementById('rate-btn');
+      btn.textContent = 'Submitting...';
+      btn.disabled = true;
+      const rater = document.getElementById('rater-name').value || 'Anonymous';
+      const post = allPosts.find(p => p.share_token === currentModalToken);
+      if (!post) return;
+
+      // Try API
+      try {
+        const res = await fetch(`${API}/fits/${currentModalToken}/rate`, {
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({score:selectedScore, rater_name:rater}),
+          signal: AbortSignal.timeout(2000)
+        });
+        if (res.ok) {
+          const data = await res.json();
+          post.avg_rating = data.avg_rating; post.total_ratings = data.total_ratings;
+          confetti();
+          toast(`Rated ${selectedScore}/10! ✨`, '⭐');
+          closeModal(); renderFeed(); return;
+        }
+      } catch {}
+
+      // Fallback: local
+      const ratings = saveLocalRating(post.id, rater, selectedScore);
+      post.avg_rating = calcAvg(ratings);
+      post.total_ratings = ratings.length;
+      // Update local storage
+      const local = getLocal();
+      const idx = local.findIndex(p=>p.id===post.id);
+      if (idx>-1) saveLocal(local);
+
+      confetti();
+      toast(`Rated ${selectedScore}/10! ✨`, '⭐');
+      closeModal(); renderFeed();
+    }
+
+    // ── Post fit ───────────────────────────────────────
+    function previewImage(e) {
+      const file = e.target.files[0]; if (!file) return;
+      const reader = new FileReader();
+      reader.onload = ev => {
+        document.getElementById('upload-placeholder').classList.add('hidden');
+        const w = document.getElementById('image-preview-wrap');
+        const img = document.getElementById('image-preview');
+        img.src = ev.target.result; w.classList.remove('hidden');
+      };
+      reader.readAsDataURL(file);
+    }
+    function removeImage(e) {
+      e.stopPropagation();
+      document.getElementById('image-preview-wrap').classList.add('hidden');
+      document.getElementById('upload-placeholder').classList.remove('hidden');
+      document.getElementById('file-input').value = '';
+    }
+    function handleDragOver(e) { e.preventDefault(); document.getElementById('upload-zone').classList.add('drag-over'); }
+    function handleDragLeave() { document.getElementById('upload-zone').classList.remove('drag-over'); }
+    function handleDrop(e) {
+      e.preventDefault(); handleDragLeave();
+      const file = e.dataTransfer.files[0];
+      if (file?.type.startsWith('image/')) {
+        const dt = new DataTransfer(); dt.items.add(file);
+        document.getElementById('file-input').files = dt.files;
+        previewImage({target:{files:[file]}});
+      }
+    }
+
+    async function submitPost(e) {
+      e.preventDefault();
+      const btn = document.getElementById('submit-btn');
+      btn.disabled = true;
+      document.getElementById('submit-text').textContent = 'Posting... ✨';
+
+      const cat = document.querySelector('input[name="category"]:checked')?.value || 'other';
+      const username = document.getElementById('username').value;
+      const caption = document.getElementById('caption').value;
+      const pin = document.getElementById('delete-pin').value;
+      const file = document.getElementById('file-input').files[0];
+
+      try {
+        // Try API
+        const form = new FormData();
+        form.append('username', username);
+        form.append('caption', caption);
+        form.append('image', file);
+        if (cat) form.append('category', cat);
+
+        let shareToken, postId;
+        try {
+          const res = await fetch(`${API}/fits`, {method:'POST', body:form, signal:AbortSignal.timeout(3000)});
+          if (res.ok) {
+            const data = await res.json();
+            shareToken = data.share_token; postId = data.id;
+          } else throw new Error();
+        } catch {
+          // Local fallback — convert image to data URL
+          postId = crypto.randomUUID?.() || Math.random().toString(36).substr(2);
+          shareToken = Math.random().toString(36).substr(2,8);
+          const imgUrl = await new Promise(r=>{const rd=new FileReader();rd.onload=ev=>r(ev.target.result);rd.readAsDataURL(file)});
+          const post = {
+            id:postId, share_token:shareToken, username, caption, category:cat,
+            image_url:imgUrl, avg_rating:null, total_ratings:0,
+            created_at:new Date().toISOString(), pin: pin||null,
+          };
+          const local = getLocal();
+          local.unshift(post);
+          saveLocal(local);
+          allPosts = local.map(p => {
+            const ratings = getLocalRatings(p.id);
+            return { ...p, avg_rating: calcAvg(ratings), total_ratings: ratings.length };
+          });
+        }
+
+        if (pin) localStorage.setItem('pin_'+postId, pin);
+
+        // Show share card
+        document.getElementById('post-form').classList.add('hidden');
+        const sc = document.getElementById('share-card');
+        sc.classList.remove('hidden');
+        document.getElementById('share-link').value = `${window.location.origin}${window.location.pathname}?rate=${shareToken}`;
+        confetti();
+        toast('You\'re glowing! 🌸', '✨');
+      } finally {
+        btn.disabled = false;
+        document.getElementById('submit-text').textContent = 'Post My Look ✨';
+      }
+    }
+
+    // ── Delete ─────────────────────────────────────────
+    let pendingDeleteId = null;
+
+    function startDelete(id, token) {
+      pendingDeleteId = id;
+      pendingDeleteToken = token;
+      document.getElementById('confirm-pin').value = '';
+      document.getElementById('delete-modal').classList.remove('hidden');
+    }
+    function closeDeleteModal() {
+      document.getElementById('delete-modal').classList.add('hidden');
+      pendingDeleteId = null;
+    }
+
+    async function confirmDelete() {
+      const pin = document.getElementById('confirm-pin').value;
+      const savedPin = localStorage.getItem('pin_'+pendingDeleteId);
+
+      if (savedPin && pin !== savedPin) {
+        toast('Wrong PIN 🔐', '❌'); return;
+      }
+
+      // Try API delete
+      try {
+        await fetch(`${API}/fits/${pendingDeleteToken}`, {method:'DELETE', signal:AbortSignal.timeout(2000)});
+      } catch {}
+
+      // Local delete
+      const local = getLocal().filter(p => p.id !== pendingDeleteId);
+      saveLocal(local);
+      localStorage.removeItem('pin_'+pendingDeleteId);
+      localStorage.removeItem('ratings_'+pendingDeleteId);
+      localStorage.removeItem('reactions_'+pendingDeleteId);
+      allPosts = allPosts.filter(p => p.id !== pendingDeleteId);
+      renderFeed();
+      closeDeleteModal();
+      toast('Post deleted 🗑️', '✅');
+    }
+
+    // ── Share ──────────────────────────────────────────
+    function copyShareLink() {
+      navigator.clipboard.writeText(document.getElementById('share-link').value);
+      toast('Link copied! 📋', '✅');
+    }
+    function copyLink(token) {
+      navigator.clipboard.writeText(`${window.location.origin}${window.location.pathname}?rate=${token}`);
+      toast('Link copied! Share it 💌', '📋');
+    }
+
+    // ── Rate via URL ───────────────────────────────────
+    async function loadRateView(token) {
+      showView('rate');
+      const nav = document.getElementById('nav-feed');
+      if (nav) nav.classList.remove('active');
+
+      const container = document.getElementById('rate-content');
+      container.innerHTML = `<div class="shimmer-card rounded-3xl h-96"></div>`;
+
+      // Find in local or fetch
+      let post = getLocal().find(p => p.share_token === token);
+      if (!post) {
+        try {
+          const res = await fetch(`${API}/fits/${token}?request_base=${API}`, {signal:AbortSignal.timeout(2000)});
+          if (res.ok) post = await res.json();
+        } catch {}
+      }
+      if (post) {
+        const ratings = getLocalRatings(post.id);
+        post.avg_rating = calcAvg(ratings); post.total_ratings = ratings.length;
+        allPosts = [post];
+        currentModalToken = token;
+        container.innerHTML = `
+          <div class="text-center mb-6">
+            <p class="text-violet/40 text-sm">Your friend wants you to rate their look 👀</p>
+            <h2 class="font-display text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-rose to-violet mt-1">
+              Rate ${post.username}'s post
+            </h2>
+          </div>`;
+        openModal(token);
+      } else {
+        container.innerHTML = `<div class="text-center py-16"><p class="text-5xl mb-4">🌸</p><p class="font-display text-2xl text-violet/40">Post not found</p></div>`;
+      }
+    }
+
+    // ── Init ───────────────────────────────────────────
+    const urlParams = new URLSearchParams(window.location.search);
+    const rateToken = urlParams.get('rate');
+    if (rateToken) { loadRateView(rateToken); } else { loadFeed(); }
+  </script>
+</body>
+</html>
